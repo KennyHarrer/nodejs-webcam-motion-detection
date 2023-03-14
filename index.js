@@ -9,7 +9,7 @@ const debounceTime = 1 * 1000; //1 seconds
     let cameras = getCameras();
     let streams = [];
     for (let [cameraNumber, camera] of Object.entries(cameras)) {
-        let stream = new CameraStream(camera, 320, 240);
+        let stream = new CameraStream(camera, 1280, 720);
         streams.push(stream);
         let dvr = new DVR(stream, 50);
 
@@ -37,6 +37,6 @@ const debounceTime = 1 * 1000; //1 seconds
                     console.log('motion not detected for 5 seconds dvr stopping...');
                 }, 5000);
             });
-        }, 3000);
+        }, 5000);
     }
 })();

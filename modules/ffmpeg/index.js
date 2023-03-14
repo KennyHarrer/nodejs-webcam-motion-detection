@@ -44,15 +44,18 @@ class CameraStream {
             `video=${deviceID}`, // input device (camera)
             '-f',
             'mpjpeg', // output format
+            '-r',
+            '30',
         ];
 
         if (width && height) {
-            args.push('-video_size', `${width}x${height}`); //downscale
+            args.push('-filter:v', `scale=${width}:${height}`); //downscale
         }
 
         args.push('-'); // output to stdout
 
         this.process = spawn('ffmpeg', args);
+        //console.log(this.process.stderr.toString());
     }
 
     handleDataChunks(chunk, chunks, callback) {
@@ -130,6 +133,8 @@ class VideoEncoder {
             '-', // read input from stdin
             '-c:v',
             'libx264', // video codec
+            '-r',
+            '30',
             outputPath, // output file path
         ];
 

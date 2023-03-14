@@ -1,6 +1,4 @@
 const { spawnSync, spawn } = require('child_process');
-const Frame = require('./frame');
-const jpeg = require('jpeg-js');
 
 function getCameras() {
     const { stderr } = spawnSync('ffmpeg', [
@@ -16,11 +14,16 @@ function getCameras() {
     const devices = stderr.toString('utf8').split('\r\n'); //array of devices
 
     let cameras = []; //devices accepted as cameras
-
+    let isVideo = false;
     for (let device of devices) {
-        if (!device.toLowerCase().includes('(video)')) continue; // this is not a video device.
-        let deviceID = device.split('] "')[1].split('"')[0]; //get everything between '[dshow @ ' and ']' (device id)
-        cameras.push(deviceID);
+        if (isVideo) {
+            let deviceID = device.split(']   Alternative name "')[1].split('"')[0];
+            cameras.push(deviceID);
+            isVideo = false;
+        } else {
+            if (!device.toLowerCase().includes('(video)')) continue; // this is not a video device.
+            isVideo = true;
+        }
     }
 
     return cameras;
@@ -29,6 +32,8 @@ function getCameras() {
 // SOI and EOI explanation: https://en.wikipedia.org/wiki/JPEG_File_Interchange_Format#File_format_structure
 const SOI = Buffer.from([0xff, 0xd8]);
 const EOI = Buffer.from([0xff, 0xd9]);
+const Frame = require('./frame');
+const jpeg = require('jpeg-js');
 
 class CameraStream {
     constructor(deviceID, width, height) {
@@ -104,7 +109,7 @@ class CameraStream {
     registerOnFrame(callback) {
         //helper function to deal with ffmpeg
         let chunks = [];
-        this.process.stdout.on('data', (data) => {
+        this.registerOnData((data) => {
             chunks = this.handleDataChunks(data, chunks, callback); //handle ffmpeg bullshittery
         });
     }

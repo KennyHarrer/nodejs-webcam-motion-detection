@@ -7,8 +7,10 @@ const debounceTime = 1 * 1000; //1 seconds
 
 (() => {
     let cameras = getCameras();
-    for (let camera of cameras) {
-        let stream = new CameraStream(camera, 640, 480);
+    let streams = [];
+    for (let [cameraNumber, camera] of Object.entries(cameras)) {
+        let stream = new CameraStream(camera, 320, 240);
+        streams.push(stream);
         let dvr = new DVR(stream, 50);
 
         let motionDetector = new MotionDetector(stream, 5);
@@ -16,16 +18,15 @@ const debounceTime = 1 * 1000; //1 seconds
         let dvrTimeout;
         setTimeout(() => {
             //wait 2 second otherwise we might detect the camera turning on as motion
+            console.log('started...');
             motionDetector.on('motion', (distance, frame) => {
                 if (cooldown > Date.now()) return;
                 cooldown = Date.now() + debounceTime; // set cooldown
-                //console.log('motion detected', distance);
-
                 if (!dvr.recording) {
                     let outputPath = path.join(
                         __dirname,
                         'dvr',
-                        Date.now() + '_' + distance + '.mp4'
+                        Date.now() + '_' + cameraNumber + '_' + distance + '.mp4'
                     );
                     dvr.start(outputPath);
                     console.log('motion detected, started recording', outputPath);
@@ -36,7 +37,6 @@ const debounceTime = 1 * 1000; //1 seconds
                     console.log('motion not detected for 5 seconds dvr stopping...');
                 }, 5000);
             });
-            console.log('started...');
-        }, 2000);
+        }, 3000);
     }
 })();

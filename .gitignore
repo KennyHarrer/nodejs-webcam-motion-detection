@@ -1,1 +1,4 @@
-dvr
+public/clips
+.env
+AuthKey.p8
+node_modules

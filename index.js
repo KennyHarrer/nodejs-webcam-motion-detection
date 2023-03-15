@@ -1,12 +1,27 @@
 const { getCameras, CameraStream } = require('./modules/ffmpeg');
 const MotionDetector = require('./modules/motionDetection');
 const DVR = require('./modules/DVR');
+const Notifier = require('./modules/notifier');
 const path = require('path');
+require('dotenv').config();
 
 const debounceTime = 1 * 1000; //1 seconds
 
 (() => {
+    const notifier = new Notifier({
+        token: {
+            key: './AuthKey.p8',
+            keyId: process.env.apnKeyId,
+            teamId: process.env.apnTeamId,
+        },
+        production: true,
+    });
     let cameras = getCameras();
+
+    if (cameras.length == 0) {
+        console.log('no cameras could be found... exiting...');
+        return;
+    }
     let streams = [];
     for (let [cameraNumber, camera] of Object.entries(cameras)) {
         let stream = new CameraStream(camera, 1280, 720);
@@ -25,11 +40,22 @@ const debounceTime = 1 * 1000; //1 seconds
                 if (!dvr.recording) {
                     let outputPath = path.join(
                         __dirname,
-                        'dvr',
+                        'public',
+                        'clips',
                         Date.now() + '_' + cameraNumber + '_' + distance + '.mp4'
                     );
                     dvr.start(outputPath);
-                    console.log('motion detected, started recording', outputPath);
+                    console.log(
+                        'motion detected on camera ' +
+                            cameraNumber +
+                            ' recording started at ' +
+                            outputPath
+                    );
+                    notifier.notify(
+                        'Motion Detected on camera ' + cameraNumber,
+                        'Saved DVR, started recording',
+                        'camera' + cameraNumber
+                    );
                 }
                 if (dvrTimeout) clearTimeout(dvrTimeout);
                 dvrTimeout = setTimeout(() => {

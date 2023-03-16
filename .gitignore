@@ -1,4 +1,4 @@
-public/clips
+clips/*.mp4
 .env
 AuthKey.p8
 node_modules

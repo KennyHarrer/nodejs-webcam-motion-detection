@@ -6,6 +6,7 @@ class DVR {
         this.heapBuffer = [];
         this.bufferSizeInMB = bufferSizeInMB * 1024 * 1024;
         this.encoder = new VideoEncoder();
+        this.storeBuffer = false;
 
         cameraStream.registerOnFrame(this.dataHandler.bind(this));
     }
@@ -18,7 +19,9 @@ class DVR {
             this.encoder.encode([data]);
             return;
         }
-        this.heapBuffer.push(data);
+        if (this.storeBuffer) {
+            this.heapBuffer.push(data);
+        }
         while (this.getHeapSizeInMB() > this.bufferSizeInMB) {
             //clear room in heap
             this.heapBuffer.shift();

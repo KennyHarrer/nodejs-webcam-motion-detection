@@ -8,19 +8,20 @@ class Frame {
         this.height = height;
     }
     readPixel(pixelNumber) {
-        pixelNumber = pixelNumber * 3;
+        pixelNumber = pixelNumber * 4;
         return {
             red: this.frameData[pixelNumber],
             green: this.frameData[pixelNumber + 1],
             blue: this.frameData[pixelNumber + 2],
+            alpha: this.frameData[pixelNumber + 3],
         };
     }
     compareFrame(otherFrame) {
-        let originalPixelCount = this.frameData.length / 3; //r, g, b per pixel so arr/3 == number of pixels
-        let newPixelCount = otherFrame.frameData.length / 3;
+        let originalPixelCount = this.frameData.length / 4; //r, g, b per pixel so arr/3 == number of pixels
+        let newPixelCount = otherFrame.frameData.length / 4;
         if (originalPixelCount != newPixelCount) {
             //something is obviously wrong
-            throw new Error('non matching pixel count');
+            throw new Error('non matching pixel count ' + originalPixelCount + ' ' + newPixelCount);
         }
         if (originalPixelCount % 1 != 0 || newPixelCount % 1 != 0) {
             //something is obviously wrong

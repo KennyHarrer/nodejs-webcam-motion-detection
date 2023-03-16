@@ -55,7 +55,10 @@ class CameraStream {
         args.push('-'); // output to stdout
 
         this.process = spawn('ffmpeg', args);
-        //console.log(this.process.stderr.toString());
+        /*
+        this.process.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });*/
     }
 
     handleDataChunks(chunk, chunks, callback) {
@@ -96,14 +99,17 @@ class CameraStream {
 
     registerOnData(callback) {
         //cleaner code
-        this.process.stdout.on('data', (data) => {
-            callback(data);
-        });
+        this.process.stdout.on('data', callback);
+        return callback;
+    }
+
+    deregisterOnData(callback) {
+        this.process.stdout.off('data', callback);
     }
 
     registerOnDecodedFrame(callback) {
         //helper function to deal with ffmpeg and json
-        this.registerOnFrame((frame) => {
+        return this.registerOnFrame((frame) => {
             var { width, height, data } = jpeg.decode(frame, { useTArray: true });
             callback(new Frame(width, height, data));
         });
@@ -112,7 +118,7 @@ class CameraStream {
     registerOnFrame(callback) {
         //helper function to deal with ffmpeg
         let chunks = [];
-        this.registerOnData((data) => {
+        return this.registerOnData((data) => {
             chunks = this.handleDataChunks(data, chunks, callback); //handle ffmpeg bullshittery
         });
     }

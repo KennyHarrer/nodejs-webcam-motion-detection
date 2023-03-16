@@ -36,7 +36,6 @@ const debounceTime = 1 * 1000; //1 seconds
             //wait 2 second otherwise we might detect the camera turning on as motion
             console.log('started...');
             motionDetector.on('motion', (distance, frame) => {
-                console.time('inside motion detect loop');
                 if (cooldown > Date.now()) return;
                 cooldown = Date.now() + debounceTime; // set cooldown
                 if (!dvr.recording) {
@@ -63,7 +62,6 @@ const debounceTime = 1 * 1000; //1 seconds
                     dvr.stop();
                     console.log('motion not detected for 5 seconds dvr stopping...');
                 }, 5000);
-                console.timeEnd('inside motion detect loop');
             });
         }, 5000);
     }
